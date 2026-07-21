@@ -293,4 +293,3 @@ func (r *linkRepository) GetReferrerAnalytics(
 
 	return analytics, nil
 }
-

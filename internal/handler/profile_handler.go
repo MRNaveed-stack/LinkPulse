@@ -113,4 +113,3 @@ func (h *ProfileHandler) DeleteAccount(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "account deleted successfully"})
 }
-

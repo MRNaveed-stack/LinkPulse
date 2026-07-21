@@ -148,10 +148,10 @@ func (m *MockProfileService) DeleteAccount(ctx context.Context, userID uuid.UUID
 
 type MockAnalyticsService struct {
 	GetOverviewFunc          func(userID uuid.UUID) (*models.AnalyticsOverview, error)
-	GetLinkAnalyticsFunc      func(userID uuid.UUID) ([]models.LinkAnalyticsDTO, error)
-	GetDailyAnalyticsFunc     func(userID uuid.UUID, days int) ([]models.DailyAnalyticsDTO, error)
-	GetRecentActivityFunc     func(userID uuid.UUID, limit int) ([]models.RecentActivityDTO, error)
-	GetReferrerAnalyticsFunc   func(userID uuid.UUID) ([]models.ReferrerAnalyticsDTO, error)
+	GetLinkAnalyticsFunc     func(userID uuid.UUID) ([]models.LinkAnalyticsDTO, error)
+	GetDailyAnalyticsFunc    func(userID uuid.UUID, days int) ([]models.DailyAnalyticsDTO, error)
+	GetRecentActivityFunc    func(userID uuid.UUID, limit int) ([]models.RecentActivityDTO, error)
+	GetReferrerAnalyticsFunc func(userID uuid.UUID) ([]models.ReferrerAnalyticsDTO, error)
 }
 
 func (m *MockAnalyticsService) GetOverview(userID uuid.UUID) (*models.AnalyticsOverview, error) {

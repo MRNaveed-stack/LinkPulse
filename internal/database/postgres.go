@@ -81,4 +81,3 @@ func Connect() (*pgxpool.Pool, error) {
 	logger.Log.Error("Failed to connect to database after retries", "error", err)
 	return nil, fmt.Errorf("failed to connect to database after %d attempts: %w", maxRetries, err)
 }
-

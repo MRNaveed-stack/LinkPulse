@@ -176,4 +176,3 @@ func (s *profileService) ChangePassword(ctx context.Context, userID uuid.UUID, c
 func (s *profileService) DeleteAccount(ctx context.Context, userID uuid.UUID) error {
 	return s.userRepo.Delete(ctx, userID)
 }
-
