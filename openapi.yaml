@@ -1,0 +1,1244 @@
+openapi: 3.0.3
+info:
+  title: LinkPulse API
+  description: API documentation for the LinkPulse application, a link management and analytics service.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Check the status of the API server.
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/register:
+    post:
+      summary: User Registration
+      description: Register a new user account.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User registered successfully
+                  access_token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refresh_token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '400':
+          description: Invalid request body or validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '409':
+          description: Username or Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      summary: User Login
+      description: Log in using email and password to receive JWT tokens.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid request body or validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/forgot-password:
+    post:
+      summary: Forgot Password
+      description: Request a password reset link.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPasswordRequest'
+      responses:
+        '200':
+          description: Password reset request processed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password reset link sent to your email
+                  token:
+                    type: string
+                    description: Only returned in development mode for convenience
+                    example: a1b2c3d4-e5f6...
+        '400':
+          description: Invalid request body or validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/reset-password:
+    post:
+      summary: Reset Password
+      description: Reset password using the reset token received in email.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password reset successfully
+        '400':
+          description: Invalid request body or validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/google/login:
+    get:
+      summary: Google OAuth Login
+      description: Redirects browser to Google OAuth consent page.
+      responses:
+        '307':
+          description: Temporary redirect to Google OAuth login screen
+        '500':
+          description: Server configuration missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/google/callback:
+    get:
+      summary: Google OAuth Callback
+      description: Callback URL that Google redirects back to with an auth code.
+      parameters:
+        - name: code
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Google authorization code
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+          description: CSRF state parameter matching state cookie
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login successful
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  token:
+                    type: string
+        '400':
+          description: Missing code or invalid state parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error during token exchange or register
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/google/token:
+    post:
+      summary: Google Token Exchange
+      description: Authenticate by directly exchanging a Google Access Token for a JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleTokenRequest'
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login successful
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  token:
+                    type: string
+        '400':
+          description: Access token parameter is missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Failed to verify token with Google
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh:
+    post:
+      summary: Token Refresh
+      description: Exchange a valid refresh token for a new access and refresh token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: Tokens refreshed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Refresh token parameter is missing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Invalid or expired refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /u/{username}:
+    get:
+      summary: Public Profile Page
+      description: Retrieve public profile information for a user, including active links.
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The username of the user profile to fetch
+      responses:
+        '200':
+          description: Public profile fetched successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicProfileResponse'
+        '404':
+          description: User/Profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /u/{username}/{slug}:
+    get:
+      summary: Redirect Short Link (Click Tracking)
+      description: Tracks click event analytics details (IP, user agent, referrer) and redirects the browser to the destination URL.
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Username of the link owner
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique short-link slug path identifier
+      responses:
+        '302':
+          description: Redirect to the target URL destination
+        '404':
+          description: Link not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /me:
+    get:
+      summary: Get Current User Info
+      description: Retrieve details of the currently authenticated user.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized (Token missing or invalid)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /links:
+    get:
+      summary: Get User's Links
+      description: Retrieve all links created by the authenticated user.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of user links retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  links:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Link'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a Link
+      description: Create a new short link for the user.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLinkRequest'
+      responses:
+        '201':
+          description: Link created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Link created successfully
+        '400':
+          description: Invalid request format or validation failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /links/{id}:
+    put:
+      summary: Update a Link
+      description: Update details of an existing link by its ID. Must be owned by the user.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the link to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLinkRequest'
+      responses:
+        '200':
+          description: Link updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: link updated successfully
+                  link:
+                    $ref: '#/components/schemas/Link'
+        '400':
+          description: Invalid link ID format or validation errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - user does not own this link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Link not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a Link
+      description: Permanently delete a link by its ID. Must be owned by the user.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the link to delete
+      responses:
+        '200':
+          description: Link deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: link deleted successfully
+        '400':
+          description: Invalid link ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - user does not own this link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Link not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /links/{id}/status:
+    patch:
+      summary: Update Link Status (Enable/Disable)
+      description: Toggle whether a link is active or disabled. Must be owned by the user.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The UUID of the link
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLinkStatusRequest'
+      responses:
+        '200':
+          description: Status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: link disabled successfully
+                  is_active:
+                    type: boolean
+                    example: false
+        '400':
+          description: Invalid link ID format or request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - user does not own this link
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Link not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /profile:
+    put:
+      summary: Update Profile
+      description: Update the display name, bio, or avatar URL of the authenticated user's profile. At least one field is required.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: profile updated successfully
+                  profile:
+                    $ref: '#/components/schemas/Profile'
+        '400':
+          description: Invalid request body or no fields provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /analytics/overview:
+    get:
+      summary: Get Analytics Overview
+      description: Retrieve link and click counts summary metrics for the user's dashboard.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Analytics summary details retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsOverview'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /analytics/links:
+    get:
+      summary: Get Link-by-Link Analytics
+      description: Retrieve a breakdown of clicks per link created by the user, ordered by click count descending.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Link-by-link analytics list retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LinkAnalyticsDTO'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /analytics/daily:
+    get:
+      summary: Get Daily Analytics
+      description: Retrieve aggregated clicks grouped daily over a recent range of days.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 7
+          description: Number of trailing days to include in the analytics graph
+      responses:
+        '200':
+          description: Daily analytics list retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DailyAnalyticsDTO'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /analytics/recent:
+    get:
+      summary: Get Recent Activity
+      description: Retrieve recent click events recorded for any links owned by the user.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+          description: The number of click events to fetch
+      responses:
+        '200':
+          description: Recent click activities retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RecentActivityDTO'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /analytics/referrers:
+    get:
+      summary: Get Referrer Analytics
+      description: Retrieve click counts aggregated by normalized referrer source (e.g. Google, Twitter, Direct), ordered descending.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Referrer analytics list retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReferrerAnalyticsDTO'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter your JWT Bearer token format 'Bearer <JWT_TOKEN>'
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          minLength: 2
+          maxLength: 50
+          example: johndoe
+        email:
+          type: string
+          format: email
+          example: johndoe@example.com
+        password:
+          type: string
+          minLength: 8
+          example: password123
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: johndoe@example.com
+        password:
+          type: string
+          example: password123
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    ForgotPasswordRequest:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: johndoe@example.com
+
+    ResetPasswordRequest:
+      type: object
+      required:
+        - token
+        - new_password
+      properties:
+        token:
+          type: string
+          example: a1b2c3d4-e5f6...
+        new_password:
+          type: string
+          minLength: 8
+          example: newpassword123
+
+    GoogleTokenRequest:
+      type: object
+      required:
+        - access_token
+      properties:
+        access_token:
+          type: string
+          example: google_access_token_12345
+
+    RefreshRequest:
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+    CreateLinkRequest:
+      type: object
+      required:
+        - title
+        - slug
+        - destination_url
+      properties:
+        title:
+          type: string
+          example: My Favorite Website
+        slug:
+          type: string
+          example: my-fav
+        destination_url:
+          type: string
+          format: uri
+          example: https://example.com
+
+    UpdateLinkRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          example: Updated Website Title
+        slug:
+          type: string
+          example: updated-slug
+        destination_url:
+          type: string
+          format: uri
+          example: https://new-destination-example.com
+
+    UpdateLinkStatusRequest:
+      type: object
+      required:
+        - is_active
+      properties:
+        is_active:
+          type: boolean
+          example: false
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        display_name:
+          type: string
+          example: John Doe
+        bio:
+          type: string
+          example: Software Engineer & Creator
+        avatar_url:
+          type: string
+          format: uri
+          example: https://example.com/avatar.jpg
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 3b2d5a1a-4c4f-4d64-8968-3d162f48f4bf
+        username:
+          type: string
+          example: johndoe
+        email:
+          type: string
+          format: email
+          example: johndoe@example.com
+        plan:
+          type: string
+          example: free
+        google_id:
+          type: string
+          nullable: true
+          example: "1029384756"
+        created_at:
+          type: string
+          format: date-time
+          example: 2026-07-05T12:00:00Z
+        updated_at:
+          type: string
+          format: date-time
+          example: 2026-07-05T12:00:00Z
+
+    Link:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: a1b2c3d4-e5f6-7a8b-9c0d-e1f2a3b4c5d6
+        user_id:
+          type: string
+          format: uuid
+          example: 3b2d5a1a-4c4f-4d64-8968-3d162f48f4bf
+        title:
+          type: string
+          example: My Favorite Website
+        slug:
+          type: string
+          example: my-fav
+        destination_url:
+          type: string
+          format: uri
+          example: https://example.com
+        is_active:
+          type: boolean
+          example: true
+        click_count:
+          type: integer
+          example: 42
+        created_at:
+          type: string
+          format: date-time
+          example: 2026-07-05T12:00:00Z
+        updated_at:
+          type: string
+          format: date-time
+          example: 2026-07-05T12:00:00Z
+
+    Profile:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+          example: 3b2d5a1a-4c4f-4d64-8968-3d162f48f4bf
+        display_name:
+          type: string
+          example: John Doe
+        bio:
+          type: string
+          example: Software Engineer & Creator
+        avatar_url:
+          type: string
+          format: uri
+          example: https://example.com/avatar.jpg
+        created_at:
+          type: string
+          format: date-time
+          example: 2026-07-05T12:00:00Z
+        updated_at:
+          type: string
+          format: date-time
+          example: 2026-07-05T12:00:00Z
+
+    PublicProfileResponse:
+      type: object
+      properties:
+        username:
+          type: string
+          example: johndoe
+        display_name:
+          type: string
+          example: John Doe
+        bio:
+          type: string
+          example: Software Engineer & Creator
+        avatar_url:
+          type: string
+          format: uri
+          example: https://example.com/avatar.jpg
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicLinkDTO'
+
+    PublicLinkDTO:
+      type: object
+      properties:
+        title:
+          type: string
+          example: My Favorite Website
+        slug:
+          type: string
+          example: my-fav
+
+    LinkAnalyticsDTO:
+      type: object
+      properties:
+        title:
+          type: string
+          example: My Favorite Website
+        slug:
+          type: string
+          example: my-fav
+        clicks:
+          type: integer
+          example: 45
+
+    DailyAnalyticsDTO:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          example: "2026-06-28"
+        clicks:
+          type: integer
+          example: 15
+
+    RecentActivityDTO:
+      type: object
+      properties:
+        link_title:
+          type: string
+          example: My Favorite Website
+        slug:
+          type: string
+          example: my-fav
+        clicked_at:
+          type: string
+          format: date-time
+          example: 2026-07-05T12:00:00Z
+        ip_address:
+          type: string
+          example: 127.0.0.1
+        referrer:
+          type: string
+          example: Direct
+
+    ReferrerAnalyticsDTO:
+      type: object
+      properties:
+        referrer:
+          type: string
+          example: Google
+        clicks:
+          type: integer
+          example: 45
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Invalid credentials
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Invalid request
+        details:
+          type: string
+          example: Key:'RegisterRequest.Password' Error:Field validation for 'Password' failed on the 'min' tag
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: password
+              message:
+                type: string
+                example: Key:'RegisterRequest.Password' Error:Field validation for 'Password' failed on the 'min' tag

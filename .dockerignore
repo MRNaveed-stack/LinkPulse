@@ -1,0 +1,13 @@
+.git
+.gitignore
+.env
+*.exe
+api.exe
+node_modules
+src/node_modules
+src/dist
+tmp
+.vscode
+.idea
+*.md
+tests
