@@ -39,3 +39,17 @@ variable "db_password" {
 variable "task_role_arn" {
   type = string
 }
+
+
+
+
+variable "google_client_id" {
+  type        = string
+  description = "The OAuth 2.0 Client ID generated from the Google Developer Console"
+}
+
+variable "google_client_secret" {
+  type        = string
+  description = "The OAuth 2.0 Client Secret generated from the Google Developer Console"
+  sensitive   = true
+}

@@ -62,6 +62,8 @@ module "task_definition" {
   task_role_arn = module.ecs_task_role.task_role_arn
 
   execution_role_arn = module.ecs_task_execution_role.execution_role_arn
+    google_client_id     = var.google_client_id
+  google_client_secret = var.google_client_secret
 
   repository_url = module.ecr.repository_url
 

@@ -33,6 +33,16 @@ resource "aws_ecs_task_definition" "backend" {
 
       # Added your DB credentials array smoothly here
       environment = [
+
+      {
+  name  = "GOOGLE_CLIENT_ID"
+  value = var.google_client_id
+},
+{
+  name  = "GOOGLE_CLIENT_SECRET"
+  value = var.google_client_secret
+},
+
         {
           name  = "DB_HOST"
           value = var.db_host
