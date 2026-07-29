@@ -1,0 +1,1 @@
+import{n as e,t}from"./jsx-runtime-KJkY8l8U.js";e();var n=t(),r=({children:e,className:t=``,onClick:r})=>(0,n.jsx)(`div`,{className:`bg-white shadow rounded-lg overflow-hidden ${t}`,onClick:r,children:e});export{r as t};
