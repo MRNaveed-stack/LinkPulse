@@ -7,7 +7,7 @@ output "rds_security_group_id" {
 }
 
 output "db_endpoint" {
-  value = aws_db_instance.postgres.endpoint
+  value = split(":", aws_db_instance.postgres.endpoint)[0]
 }
 
 output "db_port" {
