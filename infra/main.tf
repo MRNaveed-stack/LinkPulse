@@ -35,8 +35,8 @@ module "security_groups" {
 module "ecs" {
   source = "./modules/ecs"
 
-  project_name = var.project_name
-    task_role_arn = module.ecs_task_role.task_role_arn
+  project_name  = var.project_name
+  task_role_arn = module.ecs_task_role.task_role_arn
 
 
 }
@@ -58,18 +58,18 @@ module "ecs_task_execution_role" {
 module "task_definition" {
   source = "./modules/task_definition"
 
-  project_name = var.project_name
+  project_name  = var.project_name
   task_role_arn = module.ecs_task_role.task_role_arn
 
-  execution_role_arn = module.ecs_task_execution_role.execution_role_arn
-    google_client_id     = var.google_client_id
+  execution_role_arn   = module.ecs_task_execution_role.execution_role_arn
+  google_client_id     = var.google_client_id
   google_client_secret = var.google_client_secret
 
   repository_url = module.ecr.repository_url
 
   log_group_name = module.cloudwatch.log_group_name
 
-    db_host = module.rds.db_endpoint
+  db_host = module.rds.db_endpoint
 
   db_name = module.rds.db_name
 
@@ -98,14 +98,14 @@ module "alb" {
 
 module "ecs_service" {
   source = "./modules/ecs_service"
-  
+
   project_name          = var.project_name
-  cluster_id            = module.ecs.cluster_id             
-task_definition_arn = module.task_definition.task_definition_arn
-  subnet_ids            = module.vpc.public_subnet_ids  
-ecs_security_group_id = module.security_groups.ecs_security_group_id
-  target_group_arn      = module.alb.target_group_arn      
-  
+  cluster_id            = module.ecs.cluster_id
+  task_definition_arn   = module.task_definition.task_definition_arn
+  subnet_ids            = module.vpc.public_subnet_ids
+  ecs_security_group_id = module.security_groups.ecs_security_group_id
+  target_group_arn      = module.alb.target_group_arn
+
   depends_on = [
     module.alb
   ]
@@ -153,4 +153,34 @@ module "ecs_task_role" {
   project_name = var.project_name
 
   secret_arn = module.secrets.secret_arn
+}
+
+module "frontend_task_definition" {
+  source = "./modules/frontend_task_definition"
+
+  project_name       = var.project_name
+  repository_url     = module.ecr.frontend_repository_url
+  execution_role_arn = module.ecs_task_execution_role.execution_role_arn
+  log_group_name     = module.cloudwatch.log_group_name
+}
+
+
+module "frontend_ecs_service" {
+  source = "./modules/frontend_ecs_service"
+
+  project_name = var.project_name
+
+  cluster_id = module.ecs.cluster_id
+
+  task_definition_arn = module.frontend_task_definition.task_definition_arn
+
+  subnet_ids = module.vpc.public_subnet_ids
+
+  ecs_security_group_id = module.security_groups.ecs_security_group_id
+
+  target_group_arn = module.alb.frontend_target_group_arn
+
+  depends_on = [
+    module.alb
+  ]
 }

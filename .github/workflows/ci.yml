@@ -86,6 +86,7 @@ jobs:
     needs:
       - backend
       - frontend
+          if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout Repository
@@ -101,25 +102,46 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-
-      - name: Build Docker Image
+      - name: Build Backend Docker Image
         run: |
           docker build -t linkpulse-backend:latest .
           docker tag linkpulse-backend:latest 685570573364.dkr.ecr.ap-south-1.amazonaws.com/linkpulse-backend:latest
 
-      - name: Push Docker Image
+      - name: Push Backend Docker Image
         run: |
           docker push 685570573364.dkr.ecr.ap-south-1.amazonaws.com/linkpulse-backend:latest
 
-      - name: Force ECS Deployment
+      - name: Build Frontend Docker Image
+        run: |
+          docker build -t linkpulse-frontend:latest ./src
+          docker tag linkpulse-frontend:latest 685570573364.dkr.ecr.ap-south-1.amazonaws.com/linkpulse-frontend:latest
+
+      - name: Push Frontend Docker Image
+        run: |
+          docker push 685570573364.dkr.ecr.ap-south-1.amazonaws.com/linkpulse-frontend:latest
+
+      - name: Deploy Backend
         run: |
           aws ecs update-service \
             --cluster linkpulse-cluster \
             --service linkpulse-backend-service \
             --force-new-deployment
 
-      - name: Wait for Deployment
+      - name: Deploy Frontend
+        run: |
+          aws ecs update-service \
+            --cluster linkpulse-cluster \
+            --service linkpulse-frontend-service \
+            --force-new-deployment
+
+      - name: Wait for Backend
         run: |
           aws ecs wait services-stable \
             --cluster linkpulse-cluster \
             --services linkpulse-backend-service
+
+      - name: Wait for Frontend
+        run: |
+          aws ecs wait services-stable \
+            --cluster linkpulse-cluster \
+            --services linkpulse-frontend-service
