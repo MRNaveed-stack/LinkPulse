@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ProfileUpdateSchema } from '../../schemas/profile';
 import { getProfile } from '../../api/profile';
 import Button from '../common/Button';
-import { User, Mail, FileText, Link, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { User, Mail, FileText, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface ProfileFormProps {
   initialData: {
@@ -24,6 +25,7 @@ export default function ProfileForm({ initialData, onSubmit, isLoading, onFormCh
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isDirty },
   } = useForm({
     resolver: zodResolver(ProfileUpdateSchema),
@@ -94,6 +96,21 @@ export default function ProfileForm({ initialData, onSubmit, isLoading, onFormCh
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isDirty]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('Image size must be under 2MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setValue('avatar_url', reader.result as string, { shouldDirty: true });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -225,26 +242,51 @@ export default function ProfileForm({ initialData, onSubmit, isLoading, onFormCh
         )}
       </div>
 
-      {/* Avatar URL */}
+      {/* Profile Picture Upload */}
       <div>
-        <label htmlFor="avatar_url" className="block text-sm font-medium text-gray-700">
-          Avatar Image URL
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Profile Picture
         </label>
-        <div className="mt-1 relative rounded-md shadow-sm">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Link className="h-4 w-4 text-gray-400" />
+        <div className="flex items-center gap-5">
+          <div className="relative">
+            {avatarUrlValue ? (
+              <img
+                src={avatarUrlValue}
+                alt="Profile Preview"
+                className="h-16 w-16 rounded-full object-cover border-2 border-gray-200 shadow-sm"
+              />
+            ) : (
+              <div className="h-16 w-16 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xl border-2 border-gray-200 shadow-sm">
+                {displayNameValue ? displayNameValue.charAt(0).toUpperCase() : 'U'}
+              </div>
+            )}
           </div>
-          <input
-            type="url"
-            id="avatar_url"
-            placeholder="https://example.com/avatar.jpg"
-            {...register('avatar_url')}
-            className={`block w-full pl-10 pr-3 py-2 border rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${
-              errors.avatar_url ? 'border-red-300' : 'border-gray-300'
-            }`}
-          />
+
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <label className="cursor-pointer bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-xs font-semibold px-3 py-2 rounded-lg transition shadow-sm">
+                Select File
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </label>
+              {avatarUrlValue && (
+                <button
+                  type="button"
+                  onClick={() => setValue('avatar_url', '', { shouldDirty: true })}
+                  className="border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold px-3 py-2 rounded-lg transition"
+                >
+                  Remove
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-gray-400 mt-1">Accepts PNG, JPG, GIF up to 2MB.</p>
+          </div>
         </div>
-        <p className="mt-1.5 text-xs text-gray-400">Direct link to your profile picture.</p>
+        <input type="hidden" {...register('avatar_url')} />
         {errors.avatar_url && (
           <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />

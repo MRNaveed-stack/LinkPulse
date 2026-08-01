@@ -8,7 +8,13 @@ export const ProfileUpdateSchema = z.object({
     .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
   email: z.string().email('Invalid email address'),
   bio: z.string().max(200, 'Bio must be under 200 characters').optional().or(z.literal('')),
-  avatar_url: z.string().url('Invalid URL format').optional().or(z.literal('')),
+  avatar_url: z.string()
+    .refine((val) => {
+      if (!val) return true;
+      return val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:image/');
+    }, 'Must be a valid image URL or a selected image file')
+    .optional()
+    .or(z.literal('')),
 });
 
 export const PasswordChangeSchema = z.object({
