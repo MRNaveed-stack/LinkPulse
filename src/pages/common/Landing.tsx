@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom';
 import { Link2, BarChart3, Sparkles, Zap, ArrowRight, Shield, Activity } from 'lucide-react';
-import Button from '../../components/common/Button';
 
 export default function Landing() {
   return (
@@ -22,17 +21,14 @@ export default function Landing() {
 
         <div className="flex items-center gap-4">
           <Link to="/login">
-            <Button
-              variant="secondary"
-              className="border-slate-700 text-slate-300 hover:bg-slate-800 px-5 py-2 rounded-xl text-sm font-semibold transition-all duration-200"
-            >
+            <button className="border border-slate-700 bg-slate-950/40 text-slate-300 hover:bg-slate-800/80 hover:text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer">
               Log In
-            </Button>
+            </button>
           </Link>
           <Link to="/register">
-            <Button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 px-5 py-2 rounded-xl text-sm font-semibold transition-all duration-200">
+            <button className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-lg shadow-indigo-500/20 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 cursor-pointer border border-transparent">
               Sign Up Free
-            </Button>
+            </button>
           </Link>
         </div>
       </nav>
@@ -56,18 +52,15 @@ export default function Landing() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20">
           <Link to="/register" className="w-full sm:w-auto">
-            <Button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-xl shadow-indigo-500/25 px-8 py-4 rounded-xl text-base font-bold transition-all duration-200 group">
+            <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 shadow-xl shadow-indigo-500/25 px-8 py-4 rounded-xl text-base font-bold text-white transition-all duration-200 group cursor-pointer border border-transparent">
               Claim Your Link
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            </button>
           </Link>
           <Link to="/login" className="w-full sm:w-auto">
-            <Button
-              variant="secondary"
-              className="w-full sm:w-auto border-slate-800 bg-slate-950/40 text-slate-300 hover:bg-slate-800/80 hover:text-white px-8 py-4 rounded-xl text-base font-bold transition-all duration-200"
-            >
+            <button className="w-full sm:w-auto border border-slate-800 bg-slate-950/40 text-slate-300 hover:bg-slate-800/80 hover:text-white px-8 py-4 rounded-xl text-base font-bold transition-all duration-200 cursor-pointer">
               Explore Dashboard
-            </Button>
+            </button>
           </Link>
         </div>
 
