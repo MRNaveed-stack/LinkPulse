@@ -53,3 +53,16 @@ variable "google_client_secret" {
   description = "The OAuth 2.0 Client Secret generated from the Google Developer Console"
   sensitive   = true
 }
+
+variable "jwt_secret" {
+  type      = string
+  sensitive = true
+}
+
+variable "google_redirect_url" {
+  type = string
+}
+
+variable "frontend_url" {
+  type = string
+}

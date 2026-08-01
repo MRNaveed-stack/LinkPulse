@@ -1,1 +1,0 @@
-import{t as e}from"./client-DM9uYUi6.js";import{s as t}from"./index-Cft663cS.js";var n=t=>e.get(`/u/${t}`).then(e=>e.data),r=e=>t({queryKey:[`publicProfile`,e],queryFn:()=>n(e),enabled:!!e});export{r as t};

@@ -6,7 +6,7 @@ interface LinkButtonProps {
   username: string;
 }
 const LinkButton = ({ link, username }: LinkButtonProps) => {
-  const apiBaseUrl = apiClient.defaults.baseURL || 'http://localhost:8080';
+  const apiBaseUrl = apiClient.defaults.baseURL || '/api';
   const redirectUrl = `${apiBaseUrl}/u/${username}/${link.slug}`;
   return (
     <a

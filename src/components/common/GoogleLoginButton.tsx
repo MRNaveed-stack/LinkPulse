@@ -1,7 +1,7 @@
 export const GoogleLoginButton = () => {
   const handleGoogleLogin = () => {
     // Redirect to backend endpoint that initiates Google OAuth flow
-    window.location.href = 'http://localhost:8080/auth/google/login';
+    window.location.href = '/api/auth/google/login';
   };
 
   return (

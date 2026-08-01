@@ -76,6 +76,10 @@ module "task_definition" {
   db_username = var.db_username
 
   db_password = var.db_password
+
+  jwt_secret           = var.jwt_secret
+  google_redirect_url  = "http://${module.alb.alb_dns_name}/api/auth/google/callback"
+  frontend_url         = "http://${module.alb.alb_dns_name}"
 }
 
 

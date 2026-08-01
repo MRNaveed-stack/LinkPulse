@@ -62,6 +62,18 @@ resource "aws_ecs_task_definition" "backend" {
         {
           name  = "DB_PASSWORD"
           value = var.db_password
+        },
+        {
+          name  = "JWT_SECRET"
+          value = var.jwt_secret
+        },
+        {
+          name  = "GOOGLE_REDIRECT_URL"
+          value = var.google_redirect_url
+        },
+        {
+          name  = "FRONTEND_URL"
+          value = var.frontend_url
         }
       ]
     }

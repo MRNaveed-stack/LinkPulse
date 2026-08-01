@@ -14,8 +14,7 @@ interface LinkCardProps {
 
 const LinkCard = ({ link, onEdit, onDelete }: LinkCardProps) => {
   const user = useAuthStore((state) => state.user);
-  const API_BASE_URL = 'http://localhost:8080';
-  const shortUrl = user ? `${API_BASE_URL}/u/${user.username}/${link.slug}` : '';
+  const shortUrl = user ? `${window.location.origin}/api/u/${user.username}/${link.slug}` : '';
 
   return (
     <Card className="p-4 flex flex-col gap-3">

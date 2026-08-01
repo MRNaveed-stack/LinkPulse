@@ -27,3 +27,10 @@ variable "google_client_secret" {
   description = "The OAuth 2.0 Client Secret for Google Authentication"
   sensitive   = true
 }
+
+variable "jwt_secret" {
+  type        = string
+  description = "JWT Secret Key"
+  sensitive   = true
+  default     = "j*qw$1231:''()DLS_-+!~fnmdfnsdfw;ejrwerffsf23429cc^~:.,<>??/a\\_+@!kl923wdsada,sdn2023ewq,menwd"
+}
