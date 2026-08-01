@@ -6,6 +6,7 @@ import DashboardLayout from './layouts/DashboardLayout';
 import Spinner from './components/common/Spinner';
 
 // Lazy loaded page components
+const Landing = lazy(() => import('./pages/common/Landing'));
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
 const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
@@ -30,6 +31,7 @@ function App() {
         }
       >
         <Routes>
+          <Route path="/" element={<Landing />} />
           <Route path="/u/:username" element={<PublicProfilePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
